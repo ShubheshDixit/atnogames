@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+</head>
+<body>
+    <div class="header-image">
+        <img src="{{ url_for('static', filename='1624.jpg') }}" alt="" class="img">
+        <div class="black-box"></div>
+        <div class="title">
+            <h1 class="head-title">@NoGames</h1>
+            <h1>Game List</h1>
+            <h3>Check out some amazing games</h3>
+        </div>
+    </div>
+    {% for page in pages %}
+        <div class="tile" id="{{ loop.index }}">
+            <h1 class="index">
+                {{ loop.index }}
+            </h1>
+            <ul class="game_row">
+                {% for game in page.games_list: %}
+                <li class="game_item" id="{{ game['uid'] }}" onclick="showModal('{{ game.link }}', '{{ game.thumb_url}}', '{{ game.title }}')">
+                    <!-- <iframe src="{{ game.meta_details.gameplayURL }}" frameborder="0" allowfullscreen></iframe> -->
+                    <img src="{{ game['thumb_url'] }}" alt="image"/>
+                    <h3>{{ game['title'] }}</h3>
+                </li>
+                {% endfor %}
+            </ul>
+        </div> 
+    {% endfor %}
+    <script>
+        var showModal = function(game, thumb_url, title) {
+             $.ajax({
+             type : "GET",
+             url : '/details?url=' + game,
+             success: function (data) {
+                    if (data) {
+                        console.log(data);
+                        document.getElementById('close-btn').addEventListener('click', ()=>{
+                            document.getElementById('pop-up').setAttribute("style", "display: none");
+                            document.getElementById('gameplay').setAttribute('src', "");
+                        });
+                        popUp = document.getElementById('pop-up');
+                        popUp.setAttribute("style", "display: flex");
+                        content = document.getElementById('content');
+                        document.getElementById('thumb').setAttribute('src', thumb_url);
+                        document.getElementById('title').innerText = title;
+                        document.getElementById('desc').innerText = data.description;
+                        document.getElementById('screen_list').innerHTML = ` 
+                            <li class="screen_item">
+                                <img src="${data.screenshots[0]}" alt="">
+                            </li>
+                            <li class="screen_item">
+                                <img src="${data.screenshots[1]}" alt="">
+                            </li>
+                        `;
+                        document.getElementById('download_link').setAttribute('href', data.magnetURL);
+                        document.getElementById('gameplay').setAttribute('src', data.gameplayURL);
+                        var sys_div = document.getElementById('sys_div');
+                        sys_div.innerHTML = "";
+                        if(data.system_requirements.minimum.length > 0) {
+                            var h = document.createElement('h4');
+                            h.innerText = "Minimum";
+                            sys_div.append(h);
+                        }
+                        for (i in data.system_requirements.minimum) {
+                            var p = document.createElement('p');
+                            var span = document.createElement('span');
+                            span.innerText = data.system_requirements.minimum[i][0] + ": ";
+                            span.setAttribute('style', 'font-weight: bold');
+                            var s = document.createElement('span');
+                            s.innerText = data.system_requirements.minimum[i][1];
+                            p.append(span);
+                            p.append(s);
+                            sys_div.append(p);
+                        }
+                        if(data.system_requirements.recommended.length > 0) {
+                            var h = document.createElement('h4');
+                            h.innerText = "Recommended";
+                            sys_div.append(h);
+                        }
+                        for (i in data.system_requirements.recommended){
+                            var p = document.createElement('p');
+                            var span = document.createElement('span');
+                            span.innerText = data.system_requirements.recommended[i][0] + ": ";
+                            span.setAttribute('style', 'font-weight: bold');
+                            var s = document.createElement('span');
+                            s.innerText = data.system_requirements.recommended[i][1];
+                            p.append(span);
+                            p.append(s);
+                            sys_div.append(p);
+                        }
+                        var other_links = document.getElementById('other_links');
+                        for (link in data.other_links) {
+                            var a = document.createElement('a');
+                            a.setAttribute('href', data.other_links[link]);
+                            a.innerText = data.other_links[link];
+                            other_links.append(a);
+                            var br = document.createElement('br');
+                            other_links.append(br);
+                        }
+
+                 }
+                }
+             });
+         };
+     </script>
+    <div id="pop-up">
+        <div id="content">
+            <div class="thumb-drop">
+                <img id="thumb" src="" alt=""/>
+                <i class="fa fa-times-circle" id="close-btn"></i>
+            </div>
+            <div class="content-body">
+                <div class="column">
+                    
+                    <div>
+                        <h2 id="title">Title</h2>
+                        <p id="desc">Description</p>
+                    </div>
+                    <div>
+                        <div id="download_btn">
+                            <i class="fa fa-magnet"></i>
+                            <a href="" id="download_link">Download</a>
+                        </div>
+                    </div>
+                    
+                </div>
+                <br>
+                <h3>Screenshots</h3>
+                <ul id="screen_list" class="screen_row">
+                   
+                </ul>
+                <h3>System Requirements</h3>
+                <div id="sys_div">
+                    
+                </div>
+                <h3>Gameplay</h3>
+                <iframe src="" frameborder="0" id="gameplay" allowfullscreen class="iframe"></iframe>
+                <h3>Other Links</h3>
+                <div id="other_links">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
